@@ -6,19 +6,21 @@ import Members from './pages/Members';
 import Memberships from './pages/Memberships';
 import Users from './pages/Users';
 import Login from './pages/Login';
-import Navbar from './components/Navbar';
+import Layout from './components/Layout';
 
 function App() {
   return (
     <Router>
-      <Navbar />
       <Routes>
-        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/scan" element={<Scan />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/memberships" element={<Memberships />} />
-        <Route path="/users" element={<Users />} />
+
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/scan" element={<Scan />} />
+          <Route path="/members" element={<Members />} />
+          <Route path="/memberships" element={<Memberships />} />
+          <Route path="/users" element={<Users />} />
+        </Route>
       </Routes>
     </Router>
   );

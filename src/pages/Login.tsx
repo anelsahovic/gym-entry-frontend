@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import useAuth from '@/hooks/useAuth';
 import Loading from '@/components/Loading';
 import SubmitButton from '@/components/SubmitButton';
-import { MdDashboard, MdErrorOutline } from 'react-icons/md';
+import { MdErrorOutline } from 'react-icons/md';
 import axios from 'axios';
 import { mutate } from 'swr';
 
@@ -87,7 +87,7 @@ export default function Login() {
         {/* Left side */}
         <div className="hidden sm:flex flex-col w-1/2 h-full bg-gradient-to-br from-primary via-green-400 to-emerald-500 items-center justify-between gap-6 p-8 text-white ">
           <div className=" flex justify-center items-center gap-2 text-2xl">
-            <MdDashboard />
+            <img src="/public/logo_white.png" className="w-20" />
             <span>Gym Entry</span>
           </div>
           <div className="flex flex-col justify-center items-center gap-6">
