@@ -5,14 +5,11 @@ import { cn } from '@/lib/utils';
 import { FaRegAddressCard } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import LogoutButton from './LogoutButton';
+import { useSidebar } from '@/contexts/SidebarContext';
 
-type Props = {
-  isCollapsed: boolean;
-  handleCollapse: () => void;
-};
-
-export function AppSidebar({ isCollapsed, handleCollapse }: Props) {
+export function AppSidebar() {
   const location = useLocation();
+  const { collapsed, toggleSidebar } = useSidebar();
 
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
@@ -29,17 +26,12 @@ export function AppSidebar({ isCollapsed, handleCollapse }: Props) {
     <div
       className={cn(
         'h-dvh bg-white border-r p-4 flex flex-col justify-between transition-all duration-500 z-50',
-        isCollapsed
-          ? 'w-0 opacity-0 sm:relative sm:w-20 sm:opacity-100'
-          : 'w-64',
+        collapsed ? 'w-0 opacity-0 sm:relative sm:w-20 sm:opacity-100' : 'w-64',
         'sm:static',
         'absolute sm:relative'
       )}
     >
-      <div
-        className="sm:hidden absolute top-4 right-4"
-        onClick={handleCollapse}
-      >
+      <div className="sm:hidden absolute top-4 right-4" onClick={toggleSidebar}>
         <IoClose
           size={24}
           className="cursor-pointer hover:text-rose-500 transition duration-300"
@@ -48,14 +40,12 @@ export function AppSidebar({ isCollapsed, handleCollapse }: Props) {
       <div className="flex flex-col gap-10">
         {/* App Logo */}
         <div
-          onClick={handleCollapse}
+          onClick={toggleSidebar}
           className="flex flex-col items-center cursor-pointer"
         >
-          <img src="/public/logo.png" alt="Logo" className="w-20" />
-          {!isCollapsed && <span className="text-xl font-bold">Gym Entry</span>}
-          {!isCollapsed && (
-            <span className=" text-gray-700">Gym Management</span>
-          )}
+          <img src="/logo.png" alt="Logo" className="w-20" />
+          {!collapsed && <span className="text-xl font-bold">Gym Entry</span>}
+          {!collapsed && <span className=" text-gray-700">Gym Management</span>}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -68,11 +58,11 @@ export function AppSidebar({ isCollapsed, handleCollapse }: Props) {
                 location.pathname === item.path
                   ? 'bg-emerald-500 text-white'
                   : 'text-muted-foreground',
-                isCollapsed ? 'justify-center' : 'justify-start'
+                collapsed ? 'justify-center' : 'justify-start'
               )}
             >
               <span className="text-lg">{item.icon}</span>
-              {!isCollapsed && (
+              {!collapsed && (
                 <span className="ml-3 group-hover:font-semibold">
                   {item.name}
                 </span>
@@ -83,9 +73,9 @@ export function AppSidebar({ isCollapsed, handleCollapse }: Props) {
       </div>
 
       <div className="flex flex-col items-center justify-center gap-2 px-3">
-        <LogoutButton isCollapsed={isCollapsed} />
+        <LogoutButton isCollapsed={collapsed} />
 
-        {!isCollapsed && (
+        {!collapsed && (
           <span className="text-xs text-gray-400 mt-2 text-center">
             Copyright © 2025 @anelsahovic
           </span>

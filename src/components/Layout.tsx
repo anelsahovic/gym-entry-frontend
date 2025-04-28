@@ -1,24 +1,32 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
 import Topbar from './Topbar';
-import { useState } from 'react';
+import useAuth from '@/hooks/useAuth';
+import { useEffect } from 'react';
+import Loading from './Loading';
 
 export default function Layout() {
-  const [collapsed, setCollapsed] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
 
-  const handleCollapse = () => {
-    setCollapsed(!collapsed);
-  };
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate, isLoading]);
 
+  if (isLoading) {
+    return <Loading />;
+  }
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen font-poppins">
       {/* Sidebar */}
-      <AppSidebar isCollapsed={collapsed} handleCollapse={handleCollapse} />
+      <AppSidebar />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Topbar */}
-        <Topbar handleCollapse={handleCollapse} />
+        <Topbar />
 
         {/* Page Content */}
         <div className="flex-1 p-4 overflow-y-auto bg-slate-200">

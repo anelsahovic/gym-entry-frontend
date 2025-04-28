@@ -87,8 +87,8 @@ export default function Login() {
         {/* Left side */}
         <div className="hidden sm:flex flex-col w-1/2 h-full bg-gradient-to-br from-primary via-green-400 to-emerald-500 items-center justify-between gap-6 p-8 text-white ">
           <div className=" flex justify-center items-center gap-2 text-2xl">
-            <img src="/public/logo_white.png" className="w-20" />
-            <span>Gym Entry</span>
+            <img src="/logo_white.png" className="w-20" />
+            <span className="font-bold">Gym Entry</span>
           </div>
           <div className="flex flex-col justify-center items-center gap-6">
             <h3 className="text-2xl font-semibold">Nice to see you again</h3>
@@ -97,8 +97,8 @@ export default function Login() {
             </h2>
             <div className="bg-white w-12 h-1 rounded-full" />
             <p className="text-center max-w-xs text-sm">
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              Cupiditate, veniam!
+              Manage your gym memberships, members and scan members cards — all
+              in one place.
             </p>
           </div>
           <a href="https://www.anelsahovic.com">@anelsahovic</a>

@@ -7,6 +7,7 @@ import Memberships from './pages/Memberships';
 import Users from './pages/Users';
 import Login from './pages/Login';
 import Layout from './components/Layout';
+import { SidebarProvider } from './contexts/SidebarContext';
 
 function App() {
   return (
@@ -14,7 +15,13 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
 
-        <Route element={<Layout />}>
+        <Route
+          element={
+            <SidebarProvider>
+              <Layout />
+            </SidebarProvider>
+          }
+        >
           <Route path="/" element={<Home />} />
           <Route path="/scan" element={<Scan />} />
           <Route path="/members" element={<Members />} />

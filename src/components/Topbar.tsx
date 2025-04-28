@@ -13,14 +13,12 @@ import { FaRegUser } from 'react-icons/fa';
 import useAuth from '@/hooks/useAuth';
 import { FiSidebar } from 'react-icons/fi';
 import LogoutButton from './LogoutButton';
+import { useSidebar } from '@/contexts/SidebarContext';
 
-type Props = {
-  handleCollapse: () => void;
-};
-
-export default function Topbar({ handleCollapse }: Props) {
+export default function Topbar() {
   const location = useLocation();
   const { name, email, role } = useAuth();
+  const { toggleSidebar } = useSidebar();
 
   const currentDate = new Date();
   const formattedDate = format(currentDate, 'EEEE, dd/MM/yyyy');
@@ -40,7 +38,7 @@ export default function Topbar({ handleCollapse }: Props) {
           <FiSidebar
             size={20}
             className="cursor-pointer hover:text-emerald-600 transition duration-300"
-            onClick={handleCollapse}
+            onClick={toggleSidebar}
           />
         </div>
         <h1 className="font-bold text-lg">{pageTitle}</h1>
