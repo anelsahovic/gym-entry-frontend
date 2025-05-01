@@ -8,6 +8,7 @@ import Users from './pages/Users';
 import Login from './pages/Login';
 import Layout from './components/Layout';
 import { SidebarProvider } from './contexts/SidebarContext';
+import ShowMember from './pages/ShowMember';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/scan" element={<Scan />} />
           <Route path="/members" element={<Members />} />
+          <Route path="/members/:id" element={<ShowMember />} />
           <Route path="/memberships" element={<Memberships />} />
           <Route path="/users" element={<Users />} />
         </Route>

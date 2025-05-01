@@ -53,24 +53,15 @@ export default function Login() {
         navigate('/');
       }
     } catch (error) {
-      console.error('Caught error : ' + error);
-
       if (axios.isAxiosError(error)) {
-        if (error.response) {
-          const { status, data } = error.response;
-
-          if (status === 404) {
-            setErrorMessage(data.message || "Email doesn't exist.");
-          } else if (status === 401) {
-            setErrorMessage('Incorrect password.');
-          } else {
-            setErrorMessage('Something went wrong. Please try again.');
-          }
+        const backendMessage = error.response?.data.error;
+        if (backendMessage) {
+          setErrorMessage(backendMessage);
         } else {
-          setErrorMessage('No response from server. Please try again.');
+          setErrorMessage('An unexpected error occurred.');
         }
       } else {
-        setErrorMessage('Unexpected error. Please try again.');
+        setErrorMessage('Something went wrong. Try again later.');
       }
     } finally {
       setIsSubmitting(false);

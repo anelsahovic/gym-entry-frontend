@@ -37,7 +37,7 @@ export default function Topbar() {
         <div className="border-r border-gray-900 pr-4">
           <FiSidebar
             size={20}
-            className="cursor-pointer hover:text-emerald-600 transition duration-300"
+            className="cursor-pointer hover:text-primary transition duration-300"
             onClick={toggleSidebar}
           />
         </div>

@@ -54,9 +54,9 @@ export function AppSidebar() {
               key={item.path}
               to={item.path}
               className={cn(
-                'group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-emerald-100 hover:text-emerald-700',
+                'group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/20 hover:text-primary',
                 location.pathname === item.path
-                  ? 'bg-emerald-500 text-white'
+                  ? 'bg-primary text-white'
                   : 'text-muted-foreground',
                 collapsed ? 'justify-center' : 'justify-start'
               )}

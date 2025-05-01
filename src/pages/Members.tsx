@@ -1,6 +1,17 @@
 // type Props = {}
 
-import { Button } from '@/components/ui/button';
+import AddNewMemberDialog from '@/components/AddNewMemberDialog';
+import DeleteMemberDialog from '@/components/DeleteMemberDialog';
+import EditMemberDialog from '@/components/EditMemberDialog';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -18,15 +29,39 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useSidebar } from '@/contexts/SidebarContext';
-import { cn } from '@/lib/utils';
+import { cn, getMembershipBadgeColor, getMembershipStatus } from '@/lib/utils';
+import { getMembers } from '@/services/members.service';
+import { Member } from '@/types/index.types';
+import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';
-import { FaPlus } from 'react-icons/fa6';
-import { MdSearch } from 'react-icons/md';
+import { FaEye } from 'react-icons/fa';
+import { LuLoaderCircle } from 'react-icons/lu';
+import { MdMoreHoriz, MdSearch } from 'react-icons/md';
+import { Link } from 'react-router-dom';
 
 export default function Members() {
   const [tableWidth, setTableWidth] = useState(0);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const { collapsed } = useSidebar();
+
+  const handleAddMember = (newMember: Member) => {
+    setMembers((prev) => [...prev, newMember]);
+    console.log(members);
+  };
+
+  const handleDeleteMember = (memberId: string) => {
+    setMembers(members.filter((member) => member.id !== memberId));
+  };
+
+  const handleUpdateMember = (updatedMember: Member) => {
+    setMembers((prevMembers) =>
+      prevMembers.map((m) =>
+        m.id === updatedMember.id ? { ...m, ...updatedMember } : m
+      )
+    );
+  };
 
   useEffect(() => {
     function updateWidth() {
@@ -49,6 +84,26 @@ export default function Members() {
 
     return () => window.removeEventListener('resize', updateWidth);
   }, [collapsed]);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const response = await getMembers();
+        if (response.status === 200) {
+          setMembers(response.data);
+          setFetchError(null);
+        } else {
+          setFetchError(response.statusText);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        setFetchError(error?.message || 'Unexpected error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMembers();
+  }, []);
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-4">
@@ -95,15 +150,14 @@ export default function Members() {
           <div className="flex gap-4 w-full justify-end  md:items-end ">
             {/* Date Filter */}
             <div className="flex flex-col gap-1 justify-start items-start w-full md:w-[140px]">
-              <p className="text-sm text-neutral-700">Date</p>
+              <p className="text-sm text-neutral-700">Status</p>
               <Select>
                 <SelectTrigger className="bg-white w-full ">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="today">Active</SelectItem>
+                  <SelectItem value="week">Expired</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -139,181 +193,135 @@ export default function Members() {
 
           {/* Right - Add Button */}
           <div className="  w-full md:w-auto mt-6">
-            <Button className="w-full flex justify-center items-center gap-2 md:w-auto">
-              <FaPlus />
-              <span className="hidden  lg:flex">Add New Member</span>
-            </Button>
+            <AddNewMemberDialog onMemberCreated={handleAddMember} />
           </div>
         </div>
       </div>
 
       {/* displaying data section */}
       <div
-        className="bg-white w-full h-full border rounded-xl  shadow-md  "
+        className="bg-white w-full h-full border rounded-xl  shadow-md"
         style={{ width: tableWidth }}
       >
-        <Table className="w-full h-full text-sm rounded-xl overflow-scroll  ">
+        <Table className="w-full text-sm">
           <TableHeader className="bg-primary uppercase tracking-wide">
             <TableRow className="hover:bg-primary">
-              <TableHead className="p-4 text-gray-100">Name</TableHead>
-              <TableHead className="p-4 text-gray-100">Email</TableHead>
-              <TableHead className="p-4 text-gray-100">Phone</TableHead>
-              <TableHead className="p-4 text-gray-100">Date of Birth</TableHead>
-              <TableHead className="p-4 text-gray-100">Unique ID</TableHead>
-              <TableHead className="p-4 text-gray-100">Start Date</TableHead>
-              <TableHead className="p-4 text-gray-100">End Date</TableHead>
-              <TableHead className="p-4 text-gray-100">Membership</TableHead>
-              <TableHead className="p-4 text-gray-100">Created By</TableHead>
-              <TableHead className="p-4 text-gray-100">Created On</TableHead>
-              <TableHead className="p-4 text-center text-gray-100">
-                Actions
+              <TableHead className="p-4 text-gray-100 text-center">
+                Name
+              </TableHead>
+              <TableHead className="p-4 text-gray-100 text-center">
+                Unique ID
+              </TableHead>
+              <TableHead className="p-4 text-gray-100 text-center">
+                Membership
+              </TableHead>
+              <TableHead className="p-4 text-gray-100 text-center">
+                Status
+              </TableHead>
+              <TableHead className="p-4 text-gray-100 text-center">
+                End Date
+              </TableHead>
+              <TableHead className="p-4 text-gray-100 text-center">
+                Created By
+              </TableHead>
+              <TableHead className="p-4 text-gray-100 text-center">
+                Options
               </TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            <TableRow className="hover:bg-emerald-50 transition-colors duration-300 ">
-              <TableCell className="p-4 font-medium">John Doe</TableCell>
-              <TableCell className="p-4">johndoe@mail.com</TableCell>
-              <TableCell className="p-4">123123131</TableCell>
-              <TableCell className="p-4">12/12/2000</TableCell>
-              <TableCell className="p-4">NI109</TableCell>
-              <TableCell className="p-4">01/02/2025</TableCell>
-              <TableCell className="p-4">01/03/2025</TableCell>
-              <TableCell className="p-4">Monthly</TableCell>
-              <TableCell className="p-4">Amy</TableCell>
-              <TableCell className="p-4">01/01/2025</TableCell>
-              <TableCell className="p-4 flex items-center justify-center gap-3">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-emerald-100"
+            {!loading &&
+              !fetchError &&
+              members &&
+              members?.length > 0 &&
+              members?.map((member) => (
+                <TableRow
+                  key={member.id}
+                  className="hover:bg-primary/15 transition-colors duration-300"
                 >
-                  <FaEdit className="text-emerald-600" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-rose-100"
-                >
-                  <FaTrashAlt className="text-rose-600" />
-                </Button>
-              </TableCell>
-            </TableRow>
-            <TableRow className="hover:bg-emerald-50 transition-colors duration-300">
-              <TableCell className="p-4 font-medium">John Doe</TableCell>
-              <TableCell className="p-4">johndoe@mail.com</TableCell>
-              <TableCell className="p-4">123123131</TableCell>
-              <TableCell className="p-4">12/12/2000</TableCell>
-              <TableCell className="p-4">NI109</TableCell>
-              <TableCell className="p-4">01/02/2025</TableCell>
-              <TableCell className="p-4">01/03/2025</TableCell>
-              <TableCell className="p-4">Monthly</TableCell>
-              <TableCell className="p-4">Amy</TableCell>
-              <TableCell className="p-4">01/01/2025</TableCell>
-              <TableCell className="p-4 flex items-center justify-center gap-3">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-emerald-100"
-                >
-                  <FaEdit className="text-emerald-600" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-rose-100"
-                >
-                  <FaTrashAlt className="text-rose-600" />
-                </Button>
-              </TableCell>
-            </TableRow>
-            <TableRow className="hover:bg-emerald-50 transition-colors duration-300">
-              <TableCell className="p-4 font-medium">John Doe</TableCell>
-              <TableCell className="p-4">johndoe@mail.com</TableCell>
-              <TableCell className="p-4">123123131</TableCell>
-              <TableCell className="p-4">12/12/2000</TableCell>
-              <TableCell className="p-4">NI109</TableCell>
-              <TableCell className="p-4">01/02/2025</TableCell>
-              <TableCell className="p-4">01/03/2025</TableCell>
-              <TableCell className="p-4">Monthly</TableCell>
-              <TableCell className="p-4">Amy</TableCell>
-              <TableCell className="p-4">01/01/2025</TableCell>
-              <TableCell className="p-4 flex items-center justify-center gap-3">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-emerald-100"
-                >
-                  <FaEdit className="text-emerald-600" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-rose-100"
-                >
-                  <FaTrashAlt className="text-rose-600" />
-                </Button>
-              </TableCell>
-            </TableRow>
-            <TableRow className="hover:bg-emerald-50 transition-colors duration-300">
-              <TableCell className="p-4 font-medium">John Doe</TableCell>
-              <TableCell className="p-4">johndoe@mail.com</TableCell>
-              <TableCell className="p-4">123123131</TableCell>
-              <TableCell className="p-4">12/12/2000</TableCell>
-              <TableCell className="p-4">NI109</TableCell>
-              <TableCell className="p-4">01/02/2025</TableCell>
-              <TableCell className="p-4">01/03/2025</TableCell>
-              <TableCell className="p-4">Monthly</TableCell>
-              <TableCell className="p-4">Amy</TableCell>
-              <TableCell className="p-4">01/01/2025</TableCell>
-              <TableCell className="p-4 flex items-center justify-center gap-3">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-emerald-100"
-                >
-                  <FaEdit className="text-emerald-600" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-rose-100"
-                >
-                  <FaTrashAlt className="text-rose-600" />
-                </Button>
-              </TableCell>
-            </TableRow>
-            <TableRow className="hover:bg-emerald-50 transition-colors duration-300">
-              <TableCell className="p-4 font-medium">John Doe</TableCell>
-              <TableCell className="p-4">johndoe@mail.com</TableCell>
-              <TableCell className="p-4">123123131</TableCell>
-              <TableCell className="p-4">12/12/2000</TableCell>
-              <TableCell className="p-4">NI109</TableCell>
-              <TableCell className="p-4">01/02/2025</TableCell>
-              <TableCell className="p-4">01/03/2025</TableCell>
-              <TableCell className="p-4">Monthly</TableCell>
-              <TableCell className="p-4">Amy</TableCell>
-              <TableCell className="p-4">01/01/2025</TableCell>
-              <TableCell className="p-4 flex items-center justify-center gap-3">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-emerald-100"
-                >
-                  <FaEdit className="text-emerald-600" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hover:bg-rose-100"
-                >
-                  <FaTrashAlt className="text-rose-600" />
-                </Button>
-              </TableCell>
-            </TableRow>
+                  <TableCell className="p-4 text-center font-medium">
+                    {member.name}
+                  </TableCell>
+                  <TableCell className="p-4 text-center">
+                    {member.uniqueId}
+                  </TableCell>
+                  <TableCell className="p-4 text-center">
+                    <Badge
+                      className={getMembershipBadgeColor(
+                        member.membership.name
+                      )}
+                    >
+                      {member.membership.name}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="p-4 text-center">
+                    <Badge
+                      variant={
+                        getMembershipStatus(member.endDate) === 'Active'
+                          ? 'default'
+                          : 'destructive'
+                      }
+                    >
+                      {getMembershipStatus(member.endDate)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="p-4 text-center">
+                    {member.endDate
+                      ? format(new Date(member.endDate), 'dd/MM/yyyy')
+                      : 'N/A'}
+                  </TableCell>
+                  <TableCell className="p-4 text-center">
+                    {member.createdBy.name}
+                  </TableCell>
+                  <TableCell className="p-4 flex items-center justify-center gap-3 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
+                        <MdMoreHoriz size={25} className="cursor-pointer" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuLabel>Member Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <Link
+                            className="flex items-center justify-center gap-2 text-gray-800"
+                            to={`/members/${member.id}`}
+                          >
+                            <FaEye /> Show Details
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <EditMemberDialog
+                            onMemberUpdated={handleUpdateMember}
+                            member={member}
+                          />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <DeleteMemberDialog
+                            memberId={member.id}
+                            onMemberDelete={handleDeleteMember}
+                          />
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
+
+        {loading && (
+          <div className="w-full h-full flex justify-center items-center gap-2 text-primary">
+            <LuLoaderCircle size={20} className="animate-spin" /> Loading
+            members...
+          </div>
+        )}
+
+        {fetchError && <div className="text-red-500">Error: {fetchError}</div>}
+
+        {!loading && !fetchError && members?.length === 0 && (
+          <div>No members found.</div>
+        )}
       </div>
     </div>
   );

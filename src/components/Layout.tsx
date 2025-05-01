@@ -4,6 +4,7 @@ import Topbar from './Topbar';
 import useAuth from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import Loading from './Loading';
+import { Toaster } from './ui/sonner';
 
 export default function Layout() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -20,6 +21,8 @@ export default function Layout() {
   }
   return (
     <div className="flex min-h-screen font-poppins">
+      <Toaster position="top-center" richColors />
+
       {/* Sidebar */}
       <AppSidebar />
 
