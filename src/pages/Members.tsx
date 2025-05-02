@@ -3,6 +3,8 @@
 import AddNewMemberDialog from '@/components/AddNewMemberDialog';
 import DeleteMemberDialog from '@/components/DeleteMemberDialog';
 import EditMemberDialog from '@/components/EditMemberDialog';
+import SearchInput from '@/components/SearchInput';
+import SelectList from '@/components/SelectList';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
@@ -12,14 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -31,38 +25,32 @@ import {
 import { useSidebar } from '@/contexts/SidebarContext';
 import { cn, getMembershipBadgeColor, getMembershipStatus } from '@/lib/utils';
 import { getMembers } from '@/services/members.service';
-import { Member } from '@/types/index.types';
+import { getMemberships } from '@/services/memberships.service';
+import { getUsers } from '@/services/users.service';
+import { Member, Membership, User } from '@/types/index.types';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { FaEye } from 'react-icons/fa';
 import { LuLoaderCircle } from 'react-icons/lu';
-import { MdMoreHoriz, MdSearch } from 'react-icons/md';
-import { Link } from 'react-router-dom';
+import { MdMoreHoriz } from 'react-icons/md';
+import { Link, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function Members() {
   const [tableWidth, setTableWidth] = useState(0);
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { collapsed } = useSidebar();
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search');
+  const sortBy = searchParams.get('sortBy');
+  const sortValue = searchParams.get('sortValue');
 
-  const handleAddMember = (newMember: Member) => {
-    setMembers((prev) => [...prev, newMember]);
-    console.log(members);
-  };
-
-  const handleDeleteMember = (memberId: string) => {
-    setMembers(members.filter((member) => member.id !== memberId));
-  };
-
-  const handleUpdateMember = (updatedMember: Member) => {
-    setMembers((prevMembers) =>
-      prevMembers.map((m) =>
-        m.id === updatedMember.id ? { ...m, ...updatedMember } : m
-      )
-    );
-  };
-
+  // set table width based on sidebar and window width
   useEffect(() => {
     function updateWidth() {
       const windowWidth = window.innerWidth;
@@ -85,11 +73,13 @@ export default function Members() {
     return () => window.removeEventListener('resize', updateWidth);
   }, [collapsed]);
 
+  // fetch members
   useEffect(() => {
     const fetchMembers = async () => {
       try {
         const response = await getMembers();
         if (response.status === 200) {
+          setAllMembers(response.data);
           setMembers(response.data);
           setFetchError(null);
         } else {
@@ -104,6 +94,127 @@ export default function Members() {
     };
     fetchMembers();
   }, []);
+
+  // fetch memberships
+  useEffect(() => {
+    const fetchMemberships = async () => {
+      try {
+        const response = await getMemberships();
+
+        if (response.status === 200) setMemberships(response.data);
+      } catch (error) {
+        console.error(error);
+        toast.error("Can't load membership types");
+      }
+    };
+    fetchMemberships();
+  }, []);
+
+  // fetch users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await getUsers();
+
+        if (response.status === 200) setUsers(response.data);
+      } catch (error) {
+        console.error(error);
+        toast.error("Can't load users");
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  // filter members by search
+  useEffect(() => {
+    if (search) {
+      const filtered = allMembers.filter((member) =>
+        member.name.trim().toLowerCase().includes(search.trim().toLowerCase())
+      );
+      setMembers(filtered);
+    } else {
+      setMembers(allMembers);
+    }
+  }, [search, allMembers]);
+
+  // filter members by sorting
+  useEffect(() => {
+    if (sortBy && sortValue) {
+      const searchValue = sortValue.trim().toLowerCase();
+      let filtered: typeof allMembers = [];
+
+      switch (sortBy) {
+        case 'status':
+          filtered = allMembers.filter(
+            (member) =>
+              getMembershipStatus(member.endDate).toLowerCase() === searchValue
+          );
+          break;
+
+        case 'membership':
+          filtered = allMembers.filter((member) => {
+            const membershipName = member.membership.name.toLowerCase();
+            return (
+              membershipName === searchValue ||
+              membershipName.includes(searchValue)
+            );
+          });
+          break;
+
+        case 'createdBy':
+          filtered = allMembers.filter((member) => {
+            const creatorName = member.createdBy.name.toLowerCase();
+            return (
+              creatorName === searchValue || creatorName.includes(searchValue)
+            );
+          });
+          break;
+
+        default:
+          filtered = [...allMembers];
+          break;
+      }
+
+      setMembers(filtered);
+    } else {
+      setMembers(allMembers);
+    }
+  }, [allMembers, sortBy, sortValue]);
+
+  const handleAddMember = (newMember: Member) => {
+    setMembers((prev) => [...prev, newMember]);
+  };
+
+  const handleDeleteMember = (memberId: string) => {
+    setMembers(members.filter((member) => member.id !== memberId));
+  };
+
+  const handleUpdateMember = (updatedMember: Member) => {
+    setMembers((prevMembers) =>
+      prevMembers.map((m) =>
+        m.id === updatedMember.id ? { ...m, ...updatedMember } : m
+      )
+    );
+  };
+
+  const statusSelectItems = [
+    {
+      label: 'Active',
+      value: 'active',
+    },
+    {
+      label: 'Expired',
+      value: 'expired',
+    },
+  ];
+
+  const membershipsSelectItems = memberships.map((membership) => {
+    return { label: membership.name, value: membership.name.toLowerCase() };
+  });
+
+  const usersSelectItems = users.map((user) => {
+    return { label: user.name, value: user.name.toLowerCase() };
+  });
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-4">
@@ -136,58 +247,37 @@ export default function Members() {
           <p className="text-sm text-neutral-700 text-left whitespace-nowrap">
             Search members
           </p>
-          <div className="relative">
-            <MdSearch
-              size={20}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
-            />
-            <Input className="pl-10 bg-white" placeholder="Search" />
-          </div>
+          <SearchInput />
         </div>
 
         <div className="flex flex-col xs:flex-row-reverse md:flex-row xs:gap-4 justify-between items-center md:justify-end w-full">
           {/* Middle - Filters */}
           <div className="flex gap-4 w-full justify-end  md:items-end ">
-            {/* Date Filter */}
-            <div className="flex flex-col gap-1 justify-start items-start w-full md:w-[140px]">
-              <p className="text-sm text-neutral-700">Status</p>
-              <Select>
-                <SelectTrigger className="bg-white w-full ">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Active</SelectItem>
-                  <SelectItem value="week">Expired</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Status Filter */}
+            <div className=" w-full md:w-[140px]">
+              <SelectList
+                label="Status"
+                queryKey="status"
+                items={statusSelectItems}
+              />
             </div>
 
             {/* Membership Filter */}
-            <div className="flex flex-col gap-1 justify-start items-start w-full md:w-[140px]">
-              <p className="text-sm text-neutral-700">Membership</p>
-              <Select>
-                <SelectTrigger className="bg-white w-full ">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="yearly">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className=" w-full md:w-[140px]">
+              <SelectList
+                label="Membership"
+                queryKey="membership"
+                items={membershipsSelectItems}
+              />
             </div>
 
             {/* Staff Filter */}
-            <div className="flex flex-col gap-1 justify-start items-start w-full md:w-[140px]">
-              <p className="text-sm text-neutral-700">Staff</p>
-              <Select>
-                <SelectTrigger className="bg-white w-full ">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="amy">Amy</SelectItem>
-                  <SelectItem value="john">John</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className=" w-full md:w-[140px]">
+              <SelectList
+                label="User"
+                queryKey="createdBy"
+                items={usersSelectItems}
+              />
             </div>
           </div>
 

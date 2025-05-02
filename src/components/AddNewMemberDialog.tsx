@@ -48,7 +48,6 @@ export default function AddNewMemberDialog({ onMemberCreated }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [open, setOpen] = useState(false);
-
   const [memberships, setMemberships] = useState<Membership[]>([]);
 
   useEffect(() => {
