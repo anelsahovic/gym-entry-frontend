@@ -6,8 +6,11 @@ import { FaRegAddressCard } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import LogoutButton from './LogoutButton';
 import { useSidebar } from '@/contexts/SidebarContext';
+import useAuth from '@/hooks/useAuth';
+import { RiAdminLine } from 'react-icons/ri';
 
 export function AppSidebar() {
+  const { role } = useAuth();
   const location = useLocation();
   const { collapsed, toggleSidebar } = useSidebar();
 
@@ -22,6 +25,13 @@ export function AppSidebar() {
     },
   ];
 
+  if (role === 'ADMIN') {
+    menuItems.push({
+      name: 'Users',
+      path: '/users',
+      icon: <RiAdminLine size={20} />,
+    });
+  }
   return (
     <div
       className={cn(
@@ -54,10 +64,10 @@ export function AppSidebar() {
               key={item.path}
               to={item.path}
               className={cn(
-                'group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/20 hover:text-primary',
+                'group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ',
                 location.pathname === item.path
-                  ? 'bg-primary text-white'
-                  : 'text-muted-foreground',
+                  ? 'bg-primary text-white font-semibold'
+                  : 'text-muted-foreground hover:bg-primary/20 hover:text-primary',
                 collapsed ? 'justify-center' : 'justify-start'
               )}
             >

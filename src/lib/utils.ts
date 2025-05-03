@@ -25,3 +25,12 @@ export function getMembershipBadgeColor(membership: string) {
     ? 'bg-orange-500'
     : 'bg-gradient-to-br from-teal-400 via-pink-400 to-amber-400';
 }
+
+export function getRoleBadgeColor(role: string) {
+  const roleIdNormalized = role.trim().toLowerCase();
+  return roleIdNormalized === 'admin'
+    ? 'bg-gradient-to-br from-red-500 via-orange-500 to-yellow-400'
+    : roleIdNormalized === 'staff'
+    ? 'bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500'
+    : 'bg-gradient-to-br from-green-400 via-emerald-500 to-teal-400';
+}

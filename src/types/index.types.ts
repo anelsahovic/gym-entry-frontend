@@ -33,4 +33,5 @@ export interface User {
   name: string;
   email: string;
   role: 'ADMIN' | 'STAFF';
+  createdAt: Date;
 }

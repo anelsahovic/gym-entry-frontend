@@ -407,10 +407,16 @@ export default function Members() {
           </div>
         )}
 
-        {fetchError && <div className="text-red-500">Error: {fetchError}</div>}
+        {fetchError && (
+          <div className="w-full h-full flex justify-center items-center text-red-500">
+            Error: {fetchError}
+          </div>
+        )}
 
         {!loading && !fetchError && members?.length === 0 && (
-          <div>No members found.</div>
+          <div className="w-full h-full flex justify-center items-center text-neutral-700">
+            No members found.
+          </div>
         )}
       </div>
     </div>
