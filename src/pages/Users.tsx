@@ -1,9 +1,12 @@
 // type Props = {}
 
+import AddNewUserDialog from '@/components/AddNewUserDialog';
+import DeleteUserDialog from '@/components/DeleteUserDialog';
+import EditUserDialog from '@/components/EditUserDialog';
+import ResetUserPassword from '@/components/ResetUserPassword';
 import SearchInput from '@/components/SearchInput';
 import SelectList from '@/components/SelectList';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,17 +24,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useSidebar } from '@/contexts/SidebarContext';
+import useAuth from '@/hooks/useAuth';
 import { cn, getRoleBadgeColor } from '@/lib/utils';
 import { getUsers } from '@/services/users.service';
 import { User } from '@/types/index.types';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { FaEye } from 'react-icons/fa';
 import { LuLoaderCircle } from 'react-icons/lu';
 import { MdMoreHoriz } from 'react-icons/md';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function Users() {
+  const { role } = useAuth();
+  const navigate = useNavigate();
   const { collapsed } = useSidebar();
   const [tableWidth, setTableWidth] = useState(0);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -42,6 +47,13 @@ export default function Users() {
   const search = searchParams.get('search');
   const sortBy = searchParams.get('sortBy');
   const sortValue = searchParams.get('sortValue');
+
+  // protect the page - for admins only
+  useEffect(() => {
+    if (role !== 'ADMIN') {
+      navigate('/dashboard');
+    }
+  }, [navigate, role]);
 
   // set table width based on sidebar and window width
   useEffect(() => {
@@ -125,6 +137,22 @@ export default function Users() {
     }
   }, [allUsers, sortBy, sortValue]);
 
+  const handleAddUser = (newUser: User) => {
+    setUsers((prev) => [...prev, newUser]);
+  };
+
+  const handleUpdateUser = (updatedUser: User) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((m) =>
+        m.id === updatedUser.id ? { ...m, ...updatedUser } : m
+      )
+    );
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    setUsers(users.filter((user) => user.id !== userId));
+  };
+
   return (
     <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-4">
       {/* title section */}
@@ -177,7 +205,7 @@ export default function Users() {
 
           {/* Right - Add Button */}
           <div className="  w-full md:w-auto mt-6">
-            <Button>Add New User</Button>
+            <AddNewUserDialog onUserCreated={handleAddUser} />
           </div>
         </div>
       </div>
@@ -230,7 +258,7 @@ export default function Users() {
                     </Badge>
                   </TableCell>
                   <TableCell className="p-4 text-center font-medium ">
-                    {format(new Date(user.createdAt), 'dd/mm/yyyy')}
+                    {format(new Date(user.createdAt), 'dd/MM/yyyy')}
                   </TableCell>
 
                   <TableCell className="p-4 flex items-center justify-center gap-3 text-right">
@@ -241,16 +269,21 @@ export default function Users() {
                       <DropdownMenuContent>
                         <DropdownMenuLabel>User Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Link
-                            className="flex items-center justify-center gap-2 text-gray-800"
-                            to={`/users/${user.id}`}
-                          >
-                            <FaEye /> Show Details
-                          </Link>
+                        <DropdownMenuItem asChild>
+                          <ResetUserPassword user={user} />
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Edit User</DropdownMenuItem>
-                        <DropdownMenuItem>Delete User</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <EditUserDialog
+                            user={user}
+                            onUserUpdated={handleUpdateUser}
+                          />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <DeleteUserDialog
+                            userId={user.id}
+                            onUserDelete={handleDeleteUser}
+                          />
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

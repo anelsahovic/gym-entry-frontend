@@ -86,7 +86,7 @@ export default function AddNewMemberDialog({ onMemberCreated }: Props) {
       const response = await createMember(values);
 
       if (response.status === 201) {
-        toast.success('Member has been created successfully');
+        toast.success('Member created successfully');
         if (onMemberCreated) onMemberCreated(response.data);
         setOpen(false);
       } else {

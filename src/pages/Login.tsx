@@ -36,17 +36,13 @@ export default function Login() {
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
   });
 
   async function onSubmit(values: z.infer<typeof LoginSchema>) {
     try {
       setIsSubmitting(true);
       setErrorMessage('');
-      const response = await login(values.email, values.password);
+      const response = await login(values.username, values.password);
 
       if (response.status === 200) {
         await mutate('/auth');
@@ -115,14 +111,14 @@ export default function Login() {
             >
               <FormField
                 control={form.control}
-                name="email"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">E-mail</FormLabel>
+                    <FormLabel className="text-gray-700">Username</FormLabel>
                     <FormControl>
                       <Input
-                        type="email"
-                        placeholder="example@mail.com"
+                        type="text"
+                        placeholder="@johndoe"
                         {...field}
                         className="rounded-lg"
                       />

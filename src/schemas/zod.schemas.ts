@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 export const LoginSchema = z.object({
-  email: z.string().email(),
+  username: z
+    .string()
+    .min(2, 'Username must be at least 2 characters long')
+    .max(20, "Username can't be longer than 20 characters"),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
@@ -45,3 +48,42 @@ export const UpdateMemberSchema = z.object({
 });
 
 export type UpdateMemberBody = z.infer<typeof UpdateMemberSchema>;
+
+export const CreateUserSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email(),
+  password: z.string().max(50, 'Password cant be longer than 50 characters.'),
+  role: z.enum(['STAFF', 'ADMIN']),
+});
+
+export type CreateUserBody = z.infer<typeof CreateUserSchema>;
+
+export const UpdateUserSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email(),
+  role: z.enum(['STAFF', 'ADMIN']),
+});
+
+export type UpdateUserBody = z.infer<typeof UpdateUserSchema>;
+
+export const UpdateUserPasswordSchema = z.object({
+  oldPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(50, 'Password cant be longer than 50 characters'),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(50, 'Password cant be longer than 50 characters'),
+});
+
+export type UpdateUserPasswordBody = z.infer<typeof UpdateUserPasswordSchema>;
+
+export const ResetUserPasswordSchema = z.object({
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(50, 'Password cant be longer than 50 characters'),
+});
+
+export type ResetUserPasswordBody = z.infer<typeof ResetUserPasswordSchema>;

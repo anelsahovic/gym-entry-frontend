@@ -30,6 +30,8 @@ export default function Topbar() {
       ? 'Members'
       : location.pathname === '/memberships'
       ? 'Memberships'
+      : location.pathname === '/users'
+      ? 'Users'
       : 'Scan';
   return (
     <div className="h-14 bg-white flex justify-between items-center px-8 shadow">
