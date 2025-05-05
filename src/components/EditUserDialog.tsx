@@ -34,26 +34,31 @@ import {
 } from './ui/dialog';
 import { FaEdit } from 'react-icons/fa';
 import { cn } from '@/lib/utils';
+import useAuth from '@/hooks/useAuth';
 
 type Props = {
   user: User;
   onUserUpdated: (user: User) => void;
   className?: string;
+  text?: string;
 };
 
 export default function EditUserDialog({
   user,
   onUserUpdated,
   className,
+  text,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const { role } = useAuth();
 
   const form = useForm<UpdateUserBody>({
     resolver: zodResolver(UpdateUserSchema),
     defaultValues: {
       name: user.name,
+      username: user.username,
       email: user.email,
       role: user.role,
     },
@@ -99,7 +104,7 @@ export default function EditUserDialog({
         )}
       >
         <FaEdit />
-        Edit User
+        {text ? text : 'Edit User'}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -143,6 +148,25 @@ export default function EditUserDialog({
 
               <FormField
                 control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="@johndoe"
+                        className="rounded-lg"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-start" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="email"
                 rules={{ required: false }}
                 render={({ field }) => (
@@ -161,32 +185,34 @@ export default function EditUserDialog({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={user.role}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Choose role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="STAFF">Staff</SelectItem>
-                          <SelectItem value="ADMIN">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage className="text-start" />
-                  </FormItem>
-                )}
-              />
+              {role === 'ADMIN' && (
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={user.role}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Choose role" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="STAFF">Staff</SelectItem>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage className="text-start" />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
             <SubmitButton text="Save User" loading={isSubmitting} />
           </form>

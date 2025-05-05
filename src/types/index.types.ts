@@ -31,6 +31,7 @@ export interface Membership {
 export interface User {
   id: string;
   name: string;
+  username: string;
   email: string;
   role: 'ADMIN' | 'STAFF';
   createdAt: Date;

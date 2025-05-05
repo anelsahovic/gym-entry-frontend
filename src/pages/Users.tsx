@@ -30,9 +30,10 @@ import { getUsers } from '@/services/users.service';
 import { User } from '@/types/index.types';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
+import { FaEye } from 'react-icons/fa';
 import { LuLoaderCircle } from 'react-icons/lu';
 import { MdMoreHoriz } from 'react-icons/md';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function Users() {
   const { role } = useAuth();
@@ -269,6 +270,14 @@ export default function Users() {
                       <DropdownMenuContent>
                         <DropdownMenuLabel>User Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <Link
+                            className="flex items-center justify-center gap-2 text-gray-800"
+                            to={`/users/${user.id}`}
+                          >
+                            <FaEye /> Show Details
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <ResetUserPassword user={user} />
                         </DropdownMenuItem>

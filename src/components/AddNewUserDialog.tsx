@@ -133,6 +133,25 @@ export default function AddNewUserDialog({ onUserCreated }: Props) {
 
               <FormField
                 control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="@johndoe"
+                        className="rounded-lg"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-start" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="email"
                 rules={{ required: false }}
                 render={({ field }) => (

@@ -30,7 +30,7 @@ export default function Login() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate('/');
+      navigate('/dashboard');
     }
   }, [isAuthenticated, navigate, isLoading]);
 
@@ -46,7 +46,7 @@ export default function Login() {
 
       if (response.status === 200) {
         await mutate('/auth');
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

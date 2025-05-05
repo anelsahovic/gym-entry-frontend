@@ -25,6 +25,7 @@ export default function ShowMember() {
     setMember((prev) => (prev ? { ...prev, ...values } : prev));
   };
 
+  // fetch member by id
   useEffect(() => {
     if (!id) {
       setResponseError('Missing member ID.');

@@ -20,6 +20,7 @@ export default function useAuth() {
     isAuthenticated,
     userId: data?.userId ?? null,
     name: data?.name ?? null,
+    username: data?.username ?? null,
     email: data?.email ?? null,
     role: data?.role ?? null,
     isLoading,
