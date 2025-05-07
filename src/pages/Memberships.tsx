@@ -1,10 +1,10 @@
 // type Props = {}
 
+import AddNewMembershipDialog from '@/components/AddNewMembershipDialog';
 import Loading from '@/components/Loading';
 import MembershipCard from '@/components/MembershipCard';
 import SearchInput from '@/components/SearchInput';
 import SelectList from '@/components/SelectList';
-import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { cn } from '@/lib/utils';
 import { getMemberships } from '@/services/memberships.service';
@@ -53,6 +53,9 @@ export default function Memberships() {
     fetchMemberships();
   }, []);
 
+  const handleAddMembership = (membership: Membership) => {
+    setMemberships((prev) => [...prev, membership]);
+  };
   return (
     <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-4">
       {/* title section */}
@@ -105,7 +108,7 @@ export default function Memberships() {
 
           {/* Right - Add Button */}
           <div className="  w-full md:w-auto mt-6">
-            <Button>New Membership</Button>{' '}
+            <AddNewMembershipDialog onMembershipCreated={handleAddMembership} />
           </div>
         </div>
       </div>
@@ -122,7 +125,7 @@ export default function Memberships() {
       {!loading && !fetchError && memberships && (
         <div className="w-full h-full grid grid-cols-1 md:grid-cols-3  gap-6 auto-rows-auto">
           {memberships.map((membership) => (
-            <MembershipCard key={membership.id} membership={membership} />
+            <MembershipCard key={membership.id} membershipProp={membership} />
           ))}
         </div>
       )}

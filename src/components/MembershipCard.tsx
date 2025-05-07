@@ -10,14 +10,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import EditMembershipDialog from './EditMembershipDialog';
+import { useState } from 'react';
 
 type Props = {
-  membership: Membership;
+  membershipProp: Membership;
 };
 
-export default function MembershipCard({ membership }: Props) {
+export default function MembershipCard({ membershipProp }: Props) {
+  const [membership, setMembership] = useState<Membership>(membershipProp);
+
+  const handleMembershipUpdate = (membership: Membership) => {
+    setMembership(membership);
+  };
+
   return (
-    <div className="relative h-64  rounded-xl p-2 bg-gradient-to-br from-rose-500 via-orange-500 to-red-500 border border-neutral-200 shadow-lg hover:shadow-2xl transition-all duration-300 w-full max-w-sm">
+    <div className="relative h-64  rounded-xl p-2 bg-gradient-to-br from-violet-300 via-violet-500 to-purple-500 border border-neutral-200 shadow-lg hover:shadow-2xl transition-all duration-300 w-full max-w-sm">
       <div className="flex flex-col justify-between gap-4 w-full h-full rounded-xl border border-dashed border-white/50 bg-white/10 backdrop-blur-sm p-4">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -34,8 +42,12 @@ export default function MembershipCard({ membership }: Props) {
             <DropdownMenuContent>
               <DropdownMenuLabel>Options</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Show Details</DropdownMenuItem>
-              <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <EditMembershipDialog
+                  membership={membership}
+                  onMembershipUpdated={handleMembershipUpdate}
+                />
+              </DropdownMenuItem>
               <DropdownMenuItem>Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
