@@ -12,12 +12,17 @@ import {
 } from './ui/dropdown-menu';
 import EditMembershipDialog from './EditMembershipDialog';
 import { useState } from 'react';
+import DeleteMembershipDialog from './DeleteMembershipDialog';
 
 type Props = {
   membershipProp: Membership;
+  onMembershipDelete: (membership: Membership) => void;
 };
 
-export default function MembershipCard({ membershipProp }: Props) {
+export default function MembershipCard({
+  membershipProp,
+  onMembershipDelete,
+}: Props) {
   const [membership, setMembership] = useState<Membership>(membershipProp);
 
   const handleMembershipUpdate = (membership: Membership) => {
@@ -48,7 +53,12 @@ export default function MembershipCard({ membershipProp }: Props) {
                   onMembershipUpdated={handleMembershipUpdate}
                 />
               </DropdownMenuItem>
-              <DropdownMenuItem>Delete</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <DeleteMembershipDialog
+                  membership={membership}
+                  onMembershipDelete={onMembershipDelete}
+                />
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

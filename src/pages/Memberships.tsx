@@ -56,6 +56,12 @@ export default function Memberships() {
   const handleAddMembership = (membership: Membership) => {
     setMemberships((prev) => [...prev, membership]);
   };
+
+  const handleDeleteMembership = (membership: Membership) => {
+    setMemberships((prev) =>
+      prev.filter((prevMembership) => prevMembership.id !== membership.id)
+    );
+  };
   return (
     <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-4">
       {/* title section */}
@@ -125,7 +131,11 @@ export default function Memberships() {
       {!loading && !fetchError && memberships && (
         <div className="w-full h-full grid grid-cols-1 md:grid-cols-3  gap-6 auto-rows-auto">
           {memberships.map((membership) => (
-            <MembershipCard key={membership.id} membershipProp={membership} />
+            <MembershipCard
+              key={membership.id}
+              membershipProp={membership}
+              onMembershipDelete={handleDeleteMembership}
+            />
           ))}
         </div>
       )}

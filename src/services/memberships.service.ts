@@ -18,3 +18,7 @@ export const updateMembership = async (
 ) => {
   return API.put(`/memberships/${membershipId}`, membership);
 };
+
+export const deleteMembership = async (membershipId: string) => {
+  return API.delete(`/memberships/${membershipId}`);
+};
