@@ -21,22 +21,42 @@ type Props = {
 export default function SelectList({ label, items, queryKey }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sortValue = searchParams.get('sortValue');
+  const sortBy = searchParams.get('sortBy');
+  const order = searchParams.get('order');
 
   const handleSelectSortItem = (selectedValue: string) => {
     const newParams = new URLSearchParams(searchParams);
 
+    const splitValue = selectedValue.split('_');
+
     if (selectedValue === 'default') {
       newParams.delete('sortBy');
       newParams.delete('sortValue');
+      newParams.delete('order');
     } else {
-      newParams.set('sortBy', queryKey);
-      newParams.set('sortValue', selectedValue);
+      if (splitValue[1]) {
+        newParams.set('sortBy', splitValue[0]);
+        newParams.set('order', splitValue[1]);
+      } else {
+        newParams.set('sortBy', queryKey);
+        newParams.set('sortValue', splitValue[0]);
+      }
     }
     setSearchParams(newParams);
   };
 
-  const isValidSortValue = items.some((item) => item.value === sortValue);
-  const selectValueFallback = isValidSortValue ? sortValue! : 'default';
+  const isValidSortValue = items.some(
+    (item) =>
+      item.value.includes(sortValue as string) ||
+      item.value.includes(sortBy as string)
+  );
+
+  const selectValueFallback =
+    isValidSortValue && sortValue
+      ? sortValue
+      : isValidSortValue && sortBy
+      ? sortBy + '_' + order!
+      : 'default';
 
   return (
     <div className="flex flex-col gap-1 justify-start items-start w-full ">

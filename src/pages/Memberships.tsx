@@ -11,6 +11,7 @@ import { getMemberships } from '@/services/memberships.service';
 import { Membership } from '@/types/index.types';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function Memberships() {
@@ -20,6 +21,10 @@ export default function Memberships() {
   const [loading, setLoading] = useState<boolean>(true);
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [allMemberships, setAllMemberships] = useState<Membership[]>([]);
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search');
+  const sortBy = searchParams.get('sortBy');
+  const order = searchParams.get('order');
 
   // fetch memberships
   useEffect(() => {
@@ -52,6 +57,49 @@ export default function Memberships() {
     };
     fetchMemberships();
   }, []);
+
+  // filter memberships by search
+  useEffect(() => {
+    if (search) {
+      const filtered = allMemberships.filter((user) =>
+        user.name.trim().toLowerCase().includes(search.trim().toLowerCase())
+      );
+      setMemberships(filtered);
+    } else {
+      setMemberships(allMemberships);
+    }
+  }, [search, allMemberships]);
+
+  // filter memberships by sorting
+  useEffect(() => {
+    if (sortBy && order) {
+      let filtered: typeof allMemberships = [];
+
+      switch (sortBy) {
+        case 'duration':
+          filtered = [...allMemberships].sort((a, b) =>
+            order === 'asc'
+              ? a.durationDays - b.durationDays
+              : b.durationDays - a.durationDays
+          );
+          break;
+
+        case 'price':
+          filtered = [...allMemberships].sort((a, b) =>
+            order === 'asc' ? a.price - b.price : b.price - a.price
+          );
+          break;
+
+        default:
+          filtered = [...allMemberships];
+          break;
+      }
+
+      setMemberships(filtered);
+    } else {
+      setMemberships(allMemberships);
+    }
+  }, [allMemberships, order, sortBy]);
 
   const handleAddMembership = (membership: Membership) => {
     setMemberships((prev) => [...prev, membership]);
@@ -105,8 +153,22 @@ export default function Memberships() {
                 label="Sort by"
                 queryKey="role"
                 items={[
-                  { label: 'Duration', value: 'Duration' },
-                  { label: 'Price', value: 'Price' },
+                  {
+                    label: '↑ Duration',
+                    value: 'duration_asc',
+                  },
+                  {
+                    label: '↓ Duration',
+                    value: 'duration_desc',
+                  },
+                  {
+                    label: '↑ Price',
+                    value: 'price_asc',
+                  },
+                  {
+                    label: '↓ Price',
+                    value: 'price_desc',
+                  },
                 ]}
               />
             </div>
