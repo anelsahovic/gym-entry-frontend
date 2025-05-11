@@ -3,6 +3,7 @@
 import AddNewMembershipDialog from '@/components/AddNewMembershipDialog';
 import Loading from '@/components/Loading';
 import MembershipCard from '@/components/MembershipCard';
+import { PaginationComponent } from '@/components/PaginationComponent';
 import SearchInput from '@/components/SearchInput';
 import SelectList from '@/components/SelectList';
 import { useSidebar } from '@/contexts/SidebarContext';
@@ -19,12 +20,15 @@ export default function Memberships() {
 
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [memberships, setMemberships] = useState<Membership[]>([]);
+  // eslint-disable-next-line prefer-const
+  let [memberships, setMemberships] = useState<Membership[]>([]);
   const [allMemberships, setAllMemberships] = useState<Membership[]>([]);
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const sortBy = searchParams.get('sortBy');
   const order = searchParams.get('order');
+  const page = searchParams.get('page') || '1';
+  const membershipsPerPage = 3;
 
   // fetch memberships
   useEffect(() => {
@@ -110,8 +114,20 @@ export default function Memberships() {
       prev.filter((prevMembership) => prevMembership.id !== membership.id)
     );
   };
+
+  // paginate memberships
+  const start = (Number(page) - 1) * membershipsPerPage;
+  const end = start + membershipsPerPage;
+  const pageNumbers = Math.ceil(memberships.length / membershipsPerPage);
+  const endDisplay = Math.min(
+    Number(page) * membershipsPerPage,
+    memberships.length
+  );
+  // slice memberships based on pagination
+  memberships = memberships.slice(start, end);
+
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-4">
+    <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-10">
       {/* title section */}
       <div className="w-full flex flex-col justify-start items-start">
         <h1 className="font-black text-2xl uppercase text-emerald-950 tracking-wider">
@@ -191,15 +207,31 @@ export default function Memberships() {
       )}
 
       {!loading && !fetchError && memberships && (
-        <div className="w-full h-full grid grid-cols-1 md:grid-cols-3  gap-6 auto-rows-auto">
-          {memberships.map((membership) => (
-            <MembershipCard
-              key={membership.id}
-              membershipProp={membership}
-              onMembershipDelete={handleDeleteMembership}
+        <>
+          <div className="w-full h-full grid grid-cols-1 md:grid-cols-3  gap-6 auto-rows-auto">
+            {memberships.map((membership) => (
+              <MembershipCard
+                key={membership.id}
+                membershipProp={membership}
+                onMembershipDelete={handleDeleteMembership}
+              />
+            ))}
+          </div>
+
+          {/* pagination */}
+          <div className="flex flex-col justify-center items-center gap-2 mb-4">
+            <p>
+              Showing <span className="font-semibold">{start + 1}</span> -{' '}
+              <span className="font-semibold">{endDisplay} </span> of{' '}
+              <span className="font-semibold">{allMemberships.length}</span>
+            </p>
+
+            <PaginationComponent
+              perPage={membershipsPerPage.toString()}
+              pageCount={pageNumbers}
             />
-          ))}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
