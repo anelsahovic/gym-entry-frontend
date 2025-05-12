@@ -3,6 +3,7 @@
 import AddNewMemberDialog from '@/components/AddNewMemberDialog';
 import DeleteMemberDialog from '@/components/DeleteMemberDialog';
 import EditMemberDialog from '@/components/EditMemberDialog';
+import { PaginationComponent } from '@/components/PaginationComponent';
 import SearchInput from '@/components/SearchInput';
 import SelectList from '@/components/SelectList';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +41,8 @@ import { toast } from 'sonner';
 export default function Members() {
   const [tableWidth, setTableWidth] = useState(0);
   const [allMembers, setAllMembers] = useState<Member[]>([]);
-  const [members, setMembers] = useState<Member[]>([]);
+  // eslint-disable-next-line prefer-const
+  let [members, setMembers] = useState<Member[]>([]);
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -50,6 +52,8 @@ export default function Members() {
   const search = searchParams.get('search');
   const sortBy = searchParams.get('sortBy');
   const sortValue = searchParams.get('sortValue');
+  const page = searchParams.get('page') || '1';
+  const membersPerPage = 5;
 
   // set table width based on sidebar and window width
   useEffect(() => {
@@ -226,6 +230,14 @@ export default function Members() {
     return { label: user.name, value: user.name.toLowerCase() };
   });
 
+  // paginate members
+  const start = (Number(page) - 1) * membersPerPage;
+  const end = start + membersPerPage;
+  const pageNumbers = Math.ceil(members.length / membersPerPage);
+  const endDisplay = Math.min(Number(page) * membersPerPage, members.length);
+  // slice members based on pagination
+  members = members.slice(start, end);
+
   return (
     <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-4">
       {/* title section */}
@@ -300,7 +312,7 @@ export default function Members() {
 
       {/* displaying data section */}
       <div
-        className="bg-white w-full h-full border rounded-xl  shadow-md"
+        className="bg-white w-full h-full flex flex-col justify-between border rounded-xl  shadow-md"
         style={{ width: tableWidth }}
       >
         <Table className="w-full text-sm">
@@ -409,6 +421,19 @@ export default function Members() {
               ))}
           </TableBody>
         </Table>
+        {/* pagination */}
+        <div className="flex flex-col justify-center items-center gap-2 mb-4">
+          <p>
+            Showing <span className="font-semibold">{start + 1}</span> -{' '}
+            <span className="font-semibold">{endDisplay} </span> of{' '}
+            <span className="font-semibold">{allMembers.length}</span>
+          </p>
+
+          <PaginationComponent
+            perPage={membersPerPage.toString()}
+            pageCount={pageNumbers}
+          />
+        </div>
 
         {!loading && !fetchError && !members && (
           <div className="w-full h-full flex justify-center items-center text-neutral-700">
