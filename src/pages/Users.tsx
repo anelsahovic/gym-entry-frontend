@@ -3,6 +3,7 @@
 import AddNewUserDialog from '@/components/AddNewUserDialog';
 import DeleteUserDialog from '@/components/DeleteUserDialog';
 import EditUserDialog from '@/components/EditUserDialog';
+import { PaginationComponent } from '@/components/PaginationComponent';
 import ResetUserPassword from '@/components/ResetUserPassword';
 import SearchInput from '@/components/SearchInput';
 import SelectList from '@/components/SelectList';
@@ -42,12 +43,15 @@ export default function Users() {
   const [tableWidth, setTableWidth] = useState(0);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [users, setUsers] = useState<User[]>([]);
+  // eslint-disable-next-line prefer-const
+  let [users, setUsers] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const sortBy = searchParams.get('sortBy');
   const sortValue = searchParams.get('sortValue');
+  const page = searchParams.get('page') || '1';
+  const usersPerPage = 5;
 
   // protect the page - for admins only
   useEffect(() => {
@@ -154,6 +158,13 @@ export default function Users() {
     setUsers(users.filter((user) => user.id !== userId));
   };
 
+  // paginate users
+  const start = (Number(page) - 1) * usersPerPage;
+  const end = start + usersPerPage;
+  const pageNumbers = Math.ceil(users.length / usersPerPage);
+  const endDisplay = Math.min(Number(page) * usersPerPage, users.length);
+  // slice users based on pagination
+  users = users.slice(start, end);
   return (
     <div className="w-full h-full flex flex-col justify-center items-center rounded-xl gap-4">
       {/* title section */}
@@ -213,7 +224,7 @@ export default function Users() {
 
       {/* displaying data section */}
       <div
-        className="bg-white w-full h-full border rounded-xl  shadow-md"
+        className="bg-white w-full h-full flex flex-col justify-between border rounded-xl  shadow-md"
         style={{ width: tableWidth }}
       >
         <Table className="w-full text-sm">
@@ -301,6 +312,19 @@ export default function Users() {
           </TableBody>
         </Table>
 
+        {/* pagination */}
+        <div className="flex flex-col justify-center items-center gap-2 mb-4">
+          <p>
+            Showing <span className="font-semibold">{start + 1}</span> -{' '}
+            <span className="font-semibold">{endDisplay} </span> of{' '}
+            <span className="font-semibold">{allUsers.length}</span>
+          </p>
+
+          <PaginationComponent
+            perPage={usersPerPage.toString()}
+            pageCount={pageNumbers}
+          />
+        </div>
         {loading && (
           <div className="w-full h-full flex justify-center items-center gap-2 text-primary">
             <LuLoaderCircle size={20} className="animate-spin" /> Loading
