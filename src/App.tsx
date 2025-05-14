@@ -10,6 +10,7 @@ import Layout from './components/Layout';
 import { SidebarProvider } from './contexts/SidebarContext';
 import ShowMember from './pages/ShowMember';
 import UserProfile from './pages/UserProfile';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -31,6 +32,8 @@ function App() {
           <Route path="/memberships" element={<Memberships />} />
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserProfile />} />
+
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </Router>
