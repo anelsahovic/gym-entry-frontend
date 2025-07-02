@@ -47,7 +47,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { formatDate } from 'date-fns';
 import { KeyRound, QrCode } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { useForm } from 'react-hook-form';
 import { FaIdCard } from 'react-icons/fa';
@@ -56,6 +56,7 @@ import { MdOutlineReportGmailerrorred } from 'react-icons/md';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import FlippingText from '@/components/FlippingText';
+import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode';
 
 export default function Scan() {
   const [member, setMember] = useState<Member | null>(null);
@@ -64,41 +65,24 @@ export default function Scan() {
     to: new Date(2025, 5, 26),
   });
   const [memberships, setMemberships] = useState<Membership[]>([]);
-
   const [openScanResult, setOpenScanResult] = useState(false);
   const [openExtendMembership, setOpenExtendMembership] = useState(false);
+  const [openQrCodeScanner, setOpenQrCodeScanner] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [membershipExtendErrorMessage, setMembershipExtendErrorMessage] =
     useState('');
   const [loading, setLoading] = useState(false);
+  const readerRef = useRef<HTMLDivElement>(null);
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
-  // fetch memberships
-  useEffect(() => {
-    const fetchMemberships = async () => {
-      try {
-        const response = await getMemberships();
-
-        if (response.status === 200) setMemberships(response.data);
-      } catch (error) {
-        setErrorMessage(error as string);
-      }
-    };
-    fetchMemberships();
-  }, []);
-
-  // finding member by id form
-  const form = useForm<FindMemberBody>({
-    resolver: zodResolver(FindMemberSchema),
-  });
-
-  // onsubmit for finding member by id form
-  const onSubmit = async (values: FindMemberBody) => {
+  //reusable function to fetch and display members data based on unique id
+  const fetchMemberById = async (id: string) => {
     try {
       setOpenScanResult(true);
       setLoading(true);
       setErrorMessage('');
 
-      const response = await getMemberByUniqueId(values.uniqueId);
+      const response = await getMemberByUniqueId(id);
 
       if (response.status === 200) {
         setMember(response.data);
@@ -123,6 +107,70 @@ export default function Scan() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Launching scanner and reading qr code
+  useEffect(() => {
+    if (!openQrCodeScanner) return;
+
+    const tryStartScanner = () => {
+      const el = readerRef.current;
+      if (!el) return;
+
+      console.log('📸 QR scanner starting...');
+
+      const config = {
+        fps: 5,
+        qrbox: { width: 300, height: 300 },
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+      };
+
+      scannerRef.current = new Html5QrcodeScanner('reader', config, false);
+      scannerRef.current.render(success, error);
+    };
+
+    const success = async (result: string) => {
+      await fetchMemberById(result);
+      scannerRef.current?.clear();
+      setOpenQrCodeScanner(false);
+    };
+    const error = (error: string) => {
+      console.log('🔁 Scanning error:', error);
+    };
+
+    // Short delay to ensure DOM is mounted
+    const timer = setTimeout(tryStartScanner, 100);
+
+    return () => {
+      scannerRef.current?.clear().then(() => {
+        scannerRef.current = null;
+      });
+      clearTimeout(timer);
+    };
+  }, [openQrCodeScanner]);
+
+  // fetch memberships
+  useEffect(() => {
+    const fetchMemberships = async () => {
+      try {
+        const response = await getMemberships();
+
+        if (response.status === 200) setMemberships(response.data);
+      } catch (error) {
+        setErrorMessage(error as string);
+      }
+    };
+    fetchMemberships();
+  }, []);
+
+  // finding member by id form
+  const form = useForm<FindMemberBody>({
+    resolver: zodResolver(FindMemberSchema),
+  });
+
+  // onsubmit for finding member by id form
+  const onSubmit = async (values: FindMemberBody) => {
+    fetchMemberById(values.uniqueId);
   };
 
   // extending members membership form
@@ -207,13 +255,28 @@ export default function Scan() {
             membership ID below.
           </p>
 
-          <button
-            // onClick={handleScan}
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded-xl w-full justify-center"
-          >
-            <QrCode className="w-5 h-5" />
-            Scan Member QR Code
-          </button>
+          {/* trigger qr code scanner */}
+
+          <Dialog open={openQrCodeScanner} onOpenChange={setOpenQrCodeScanner}>
+            <DialogTrigger onClick={() => setOpenQrCodeScanner(true)}>
+              <div className="flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-gray-800 font-medium px-4 py-2 rounded-xl w-full justify-center cursor-pointer transition-all duration-300">
+                <QrCode className="w-5 h-5" />
+                Scan Member QR Code
+              </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>QR Code Scanner</DialogTitle>
+                <DialogDescription>
+                  Place the QR code in the middle
+                </DialogDescription>
+              </DialogHeader>
+
+              <div>
+                <div id="reader" ref={readerRef}></div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <span className="text-gray-500">OR</span>
           <Form {...form}>
@@ -254,7 +317,7 @@ export default function Scan() {
                   Scan Result
                 </DialogTitle>
                 <DialogDescription>
-                  Showing results from scanned user{' '}
+                  Showing results from scanned member{' '}
                 </DialogDescription>
               </DialogHeader>
 
@@ -397,95 +460,96 @@ export default function Scan() {
                 )}
               </div>
               <DialogFooter className="pb-2 px-6">
-                <Dialog
-                  open={openExtendMembership}
-                  onOpenChange={setOpenExtendMembership}
-                >
-                  <DialogTrigger
-                    className={buttonVariants({ variant: 'default' })}
+                {member && (
+                  <Dialog
+                    open={openExtendMembership}
+                    onOpenChange={setOpenExtendMembership}
                   >
-                    Extend Membership
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Extend the Membership</DialogTitle>
+                    <DialogTrigger
+                      className={buttonVariants({ variant: 'default' })}
+                    >
+                      Extend Membership
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Extend the Membership</DialogTitle>
 
-                      {membershipExtendErrorMessage && (
-                        <div className="bg-red-200 text-red-500 p-2 flex justify-center items-center gap-2 rounded-lg">
-                          <MdOutlineReportGmailerrorred />
-                          {membershipExtendErrorMessage}
-                        </div>
-                      )}
-
-                      <DialogDescription></DialogDescription>
-                    </DialogHeader>
-
-                    <div>
-                      <Form {...extendMembershipForm}>
-                        <form
-                          onSubmit={extendMembershipForm.handleSubmit(
-                            onSubmitMembershipExtend
-                          )}
-                          className="w-full space-y-4 flex flex-col justify-center items-center"
-                        >
-                          <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm w-full">
-                            <div>
-                              <p className=" text-xs sm:text-sm text-gray-500 uppercase">
-                                Member
-                              </p>
-                              <p className=" font-medium text-gray-800">
-                                {member?.name}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs sm:text-sm text-gray-500 uppercase">
-                                Expires On
-                              </p>
-                              <p className="font-medium text-gray-800">
-                                {formatDate(
-                                  member ? member?.endDate : '1/1/1111',
-                                  'dd/MM/yyy'
-                                )}
-                              </p>
-                            </div>
+                        {membershipExtendErrorMessage && (
+                          <div className="bg-red-200 text-red-500 p-2 flex justify-center items-center gap-2 rounded-lg">
+                            <MdOutlineReportGmailerrorred />
+                            {membershipExtendErrorMessage}
                           </div>
+                        )}
 
-                          <FormField
-                            control={extendMembershipForm.control}
-                            name="membershipId"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Membership type</FormLabel>
-                                <FormControl>
-                                  <Select
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Choose type" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {memberships &&
-                                        memberships.length &&
-                                        memberships.map((membership) => (
-                                          <SelectItem
-                                            key={membership.id}
-                                            value={membership.id}
-                                          >
-                                            {membership.name}
-                                          </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                  </Select>
-                                </FormControl>
-                                <FormMessage className="text-start" />
-                              </FormItem>
+                        <DialogDescription></DialogDescription>
+                      </DialogHeader>
+
+                      <div>
+                        <Form {...extendMembershipForm}>
+                          <form
+                            onSubmit={extendMembershipForm.handleSubmit(
+                              onSubmitMembershipExtend
                             )}
-                          />
+                            className="w-full space-y-4 flex flex-col justify-center items-center"
+                          >
+                            <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm w-full">
+                              <div>
+                                <p className=" text-xs sm:text-sm text-gray-500 uppercase">
+                                  Member
+                                </p>
+                                <p className=" font-medium text-gray-800">
+                                  {member?.name}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs sm:text-sm text-gray-500 uppercase">
+                                  Expires On
+                                </p>
+                                <p className="font-medium text-gray-800">
+                                  {formatDate(
+                                    member ? member?.endDate : '1/1/1111',
+                                    'dd/MM/yyy'
+                                  )}
+                                </p>
+                              </div>
+                            </div>
 
-                          {/* <FormField
+                            <FormField
+                              control={extendMembershipForm.control}
+                              name="membershipId"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Membership type</FormLabel>
+                                  <FormControl>
+                                    <Select
+                                      onValueChange={field.onChange}
+                                      defaultValue={field.value}
+                                    >
+                                      <FormControl>
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue placeholder="Choose type" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {memberships &&
+                                          memberships.length &&
+                                          memberships.map((membership) => (
+                                            <SelectItem
+                                              key={membership.id}
+                                              value={membership.id}
+                                            >
+                                              {membership.name}
+                                            </SelectItem>
+                                          ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </FormControl>
+                                  <FormMessage className="text-start" />
+                                </FormItem>
+                              )}
+                            />
+
+                            {/* <FormField
                             control={extendMembershipForm.control}
                             name="memberId"
                             render={({ field }) => (
@@ -505,15 +569,16 @@ export default function Scan() {
                             )}
                           /> */}
 
-                          <SubmitButton
-                            text="Extend Membership"
-                            loading={loading}
-                          />
-                        </form>
-                      </Form>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                            <SubmitButton
+                              text="Extend Membership"
+                              loading={loading}
+                            />
+                          </form>
+                        </Form>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </DialogFooter>
             </DialogContent>
           </Dialog>
