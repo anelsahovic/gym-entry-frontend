@@ -124,3 +124,16 @@ export const UpdateMembershipSchema = z.object({
 });
 
 export type UpdateMembershipBody = z.infer<typeof UpdateMembershipSchema>;
+
+export const FindMemberSchema = z.object({
+  uniqueId: z.string().min(1, 'Unique ID is required'),
+});
+
+export type FindMemberBody = z.infer<typeof FindMemberSchema>;
+
+export const ExtendMembershipSchema = z.object({
+  // memberId: z.string().min(1, 'Member ID is required'),
+  membershipId: z.string().min(1, 'Membership is required'),
+});
+
+export type ExtendMembershipBody = z.infer<typeof ExtendMembershipSchema>;

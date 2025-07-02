@@ -1,6 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
-import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
 import Scan from './pages/Scan';
 import Members from './pages/Members';
 import Memberships from './pages/Memberships';
@@ -25,7 +25,7 @@ function App() {
             </SidebarProvider>
           }
         >
-          <Route path="/dashboard" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/scan" element={<Scan />} />
           <Route path="/members" element={<Members />} />
           <Route path="/members/:id" element={<ShowMember />} />

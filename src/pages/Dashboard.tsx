@@ -3,7 +3,7 @@ import useAuth from '../hooks/useAuth';
 import { useEffect } from 'react';
 import Loading from '@/components/Loading';
 
-export default function Home() {
+export default function Dashboard() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -19,7 +19,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1>HOME DASHBOARD</h1>
+      <h1> DASHBOARD</h1>
     </div>
   );
 }

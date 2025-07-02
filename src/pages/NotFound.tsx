@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FaSearch, FaHome } from 'react-icons/fa'; // Using react-icons for the search icon
+import { FaSearch, FaHome } from 'react-icons/fa';
 
 const NotFound = () => {
   return (

@@ -15,7 +15,7 @@ export function AppSidebar() {
   const { collapsed, toggleSidebar } = useSidebar();
 
   const menuItems = [
-    { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
+    { name: 'Dashboard', path: '/dashboard', icon: <Home size={20} /> },
     { name: 'Scan', path: '/scan', icon: <ScanLine size={20} /> },
     { name: 'Members', path: '/members', icon: <Users size={20} /> },
     {
