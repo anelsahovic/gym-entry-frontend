@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import { useEffect, useState } from 'react';
 import Loading from '@/components/Loading';
@@ -25,18 +24,11 @@ import { getLastThreeMonthsRevenue } from '@/lib/utils';
 import { ChartRadialStacked } from '@/components/ChartRadialStacked';
 
 export default function Dashboard() {
-  const { isAuthenticated, isLoading, name, username, userId } = useAuth();
-  const navigate = useNavigate();
+  const { isLoading, name, username, userId } = useAuth();
   const [members, setMembers] = useState<Member[] | null>(null);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [memberships, setMemberships] = useState<Membership[] | null>(null);
   const [loadingMemberships, setLoadingMemberships] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate, isLoading]);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -260,18 +252,21 @@ export default function Dashboard() {
           {/* Welcome message */}
           <h2 className=" flex flex-col text-lg font-semibold text-gray-800">
             Welcome back,
-            <span className="text-primary"> {name.split(' ')[0]} 👋</span>
+            <span className="text-primary">
+              {' '}
+              {name && name.split(' ')[0]} 👋
+            </span>
           </h2>
 
           {/* Avatar and username */}
           <div className="flex flex-col justify-center items-center gap-5">
             <div className="size-20 rounded-full bg-primary/20 text-primary flex items-center justify-center text-2xl font-bold shadow-sm">
-              {name?.charAt(0)}
+              {name && name?.charAt(0)}
             </div>
 
             <div>
-              <h2 className="font-medium">{name}</h2>
-              <h4 className="text-sm">@{username}</h4>
+              <h2 className="font-medium">{name && name}</h2>
+              <h4 className="text-sm">@{username && username}</h4>
             </div>
           </div>
 

@@ -25,8 +25,8 @@ function App() {
             </SidebarProvider>
           }
         >
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/scan" element={<Scan />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/members" element={<Members />} />
           <Route path="/members/:id" element={<ShowMember />} />
           <Route path="/memberships" element={<Memberships />} />
