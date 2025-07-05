@@ -4,10 +4,6 @@
 
 ---
 
-### Demo QR Code to scan
-
-![Demo App](/public/CARD1.png)
-
 A modern, responsive frontend application for managing gym memberships, users, and memberships. Built with **React 19**, **TypeScript**, **Vite**, and styled with **Tailwind CSS**. The app features QR code scanning for quick member lookup, robust form validation, interactive charts, and smooth user experience with animations.
 
 🌐 **Live Demo**: [Gym Entry on Vercel](https://anelsahovic-gym-entry.vercel.app/)
@@ -87,3 +83,7 @@ A modern, responsive frontend application for managing gym memberships, users, a
 ---
 
 _This project is actively maintained and designed to provide a seamless experience for gym staff and members management._
+
+### Demo QR Code to scan
+
+![Demo App](/public/CARD1.png)

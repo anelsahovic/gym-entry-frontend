@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Outlet, useNavigate } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
 import Topbar from './Topbar';
@@ -5,6 +6,7 @@ import useAuth from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import Loading from './Loading';
 import { Toaster } from './ui/sonner';
+import { Badge } from './ui/badge';
 
 export default function Layout() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -20,9 +22,11 @@ export default function Layout() {
     return <Loading />;
   }
   return (
-    <div className="flex min-h-screen font-poppins">
+    <div className="flex min-h-screen font-poppins relative">
       <Toaster position="top-center" richColors />
-
+      <Badge className="absolute z-50000 top-1 right-1 bg-fuchsia-500">
+        DEMO MODE
+      </Badge>
       {/* Sidebar */}
       <AppSidebar />
 

@@ -16,7 +16,18 @@ export default function useAuth() {
 
   const isAuthenticated = !!data?.userId;
 
-  return {
+  const demoData = {
+    isAuthenticated: true,
+    userId: '342c1841-26dc-4fd4-8f98-0d9e84de3a28',
+    name: 'Demo User',
+    username: 'demouser',
+    email: 'demouser@mail.test',
+    role: 'ADMIN',
+    isLoading: false,
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const realData = {
     isAuthenticated,
     userId: data?.userId ?? null,
     name: data?.name ?? null,
@@ -26,4 +37,6 @@ export default function useAuth() {
     isLoading,
     error,
   };
+
+  return demoData;
 }

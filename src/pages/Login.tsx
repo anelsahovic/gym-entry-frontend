@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Form,
   FormControl,
@@ -13,26 +14,29 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { login } from '@/services/auth.service';
 import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useEffect, useState } from 'react';
 import useAuth from '@/hooks/useAuth';
 import Loading from '@/components/Loading';
 import SubmitButton from '@/components/SubmitButton';
-import { MdErrorOutline } from 'react-icons/md';
+import { MdErrorOutline, MdInfoOutline } from 'react-icons/md';
 import axios from 'axios';
 import { mutate } from 'swr';
+import { IoIosInformationCircleOutline } from 'react-icons/io';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isAuthenticated, isLoading } = useAuth();
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate, isLoading]);
+  // useEffect(() => {
+  //   if (!isLoading && isAuthenticated) {
+  //     navigate('/dashboard');
+  //   }
+  // }, [isAuthenticated, navigate, isLoading]);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -42,12 +46,15 @@ export default function Login() {
     try {
       setIsSubmitting(true);
       setErrorMessage('');
-      const response = await login(values.username, values.password);
+      // const response = await login(values.username, values.password);
 
-      if (response.status === 200) {
-        await mutate('/auth');
-        navigate('/dashboard');
-      }
+      // if (response.status === 200) {
+      //   await mutate('/auth');
+      //   navigate('/dashboard');
+      // }
+
+      await mutate('/auth');
+      navigate('/dashboard');
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const backendMessage = error.response?.data.error;
@@ -96,6 +103,14 @@ export default function Login() {
           <div className="text-center">
             <h2 className="text-4xl font-bold text-gray-800">Login</h2>
             <p className="text-gray-500 mt-2">Access your account</p>
+            <div className="bg-sky-100 text-sky-600 p-1 pl-6 rounded flex justify-start items-start gap-2 mt-2 relative">
+              <MdInfoOutline size={20} className="absolute left-1 top-1" />
+              <p className="italic text-sm">
+                Authentication has been temporarily disabled for demo purposes
+                and recruiters flow. In production, full auth is enabled. Enter
+                any username and password.
+              </p>
+            </div>
           </div>
           {errorMessage && (
             <div className="flex  items-center justify-center gap-2 text-red-600 bg-red-100 rounded-md p-2 text-sm ">
