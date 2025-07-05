@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Form,
   FormControl,
@@ -12,23 +11,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/input';
-import { login } from '@/services/auth.service';
 import { useNavigate } from 'react-router-dom';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useEffect, useState } from 'react';
-import useAuth from '@/hooks/useAuth';
-import Loading from '@/components/Loading';
+import { useState } from 'react';
+
 import SubmitButton from '@/components/SubmitButton';
 import { MdErrorOutline, MdInfoOutline } from 'react-icons/md';
 import axios from 'axios';
 import { mutate } from 'swr';
-import { IoIosInformationCircleOutline } from 'react-icons/io';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { isAuthenticated, isLoading } = useAuth();
+  // const { isAuthenticated, isLoading } = useAuth();
 
   const navigate = useNavigate();
 
@@ -46,6 +40,8 @@ export default function Login() {
     try {
       setIsSubmitting(true);
       setErrorMessage('');
+
+      console.log(values);
       // const response = await login(values.username, values.password);
 
       // if (response.status === 200) {
@@ -71,9 +67,9 @@ export default function Login() {
     }
   }
 
-  if (isLoading) {
-    return <Loading />;
-  }
+  // if (isLoading) {
+  //   return <Loading />;
+  // }
 
   return (
     <div className="relative w-full min-h-screen flex justify-center items-center bg-gradient-to-br from-green-100 via-green-50 to-green-100 p-4">
